@@ -27,7 +27,7 @@ Users.create("example@email.net", "strong_pa$\$word") {
 Попробуем так же получить данные о пользователе:
 ```kotlin
 Users.get(data!!.token.key) {
-    if (this.success) {
+    if (success) {
         print(data?.email) // выводим e-mail
     }
 }
