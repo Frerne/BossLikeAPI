@@ -29,7 +29,74 @@ object Users {
 
 }
 
-object UserSocial
+object UserSocial {
+
+    fun all(apiKey: String, lambda: BaseResponseModel<ArrayList<UserSocialModel>?>.() -> Unit) {
+        api.getLinkedSocials(apiKey) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+
+    fun linkAccountByLike(
+        apiKey: String,
+        url: String,
+        type: Int,
+        lambda: BaseResponseModel<LinkByLikeCheckProfileResponseModel?>.() -> Unit
+    ) {
+        if (type != 1 || type != 3 || type != 5)
+            throw RequestError("Social type is wrong, can be only 1 (Vkontakte), 3 (Instagram) or 5 (Twitter)")
+        api.authByLikeCheckProfile(apiKey, url, type) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+
+    fun getTaskForConfirmation(
+        apiKey: String,
+        token: String,
+        lambda: BaseResponseModel<LinkFromAuthByLikeModel?>.() -> Unit
+    ) {
+        api.getUrlFromAuthByLike(apiKey, token) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+
+    fun checkLike(apiKey: String, token: String, lambda: BaseResponseModel<CheckLikeResponseModel?>.() -> Unit) {
+        api.checkLikeInAuthByLike(apiKey, token) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+
+    fun linkAccountByPhone(
+        apiKey: String,
+        serviceType: Int,
+        phoneNumber: String,
+        lambda: BaseResponseModel<AuthByPhoneFirstStageModel?>.() -> Unit
+    ) {
+        api.authByPhone(apiKey, serviceType, phoneNumber) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+
+    fun checkByCode(
+        apiKey: String,
+        token: String,
+        code: String,
+        lambda: BaseResponseModel<AuthByPhoneCheckModel?>.() -> Unit
+    ) {
+        api.checkAuthByPhone(apiKey, token, code) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+
+}
+
+object Coupon {
+    fun get(apiKey: String, code: String, lambda: BaseResponseModel<CouponModel?>.() -> Unit) {
+        api.getCouponInfo(apiKey, code) enqueueThread { response ->
+            lambda.invoke(response)
+        }
+    }
+}
 
 object Tasks {
 
@@ -58,6 +125,8 @@ object Tasks {
     }
 
 }
+
+data class RequestError(override val message: String) : Exception(message)
 
 
 private val api = BotsAPI.retrofit.create(BotsAPI.API::class.java)
@@ -135,10 +204,9 @@ private object BotsAPI {
         @POST("users/me/social/auth/phone")
         fun checkAuthByPhone(
             @Header("X-Api-Key") apiKey: String,
-            @Query("service_type") serviceType: Int,
             @Query("token") token: String,
             @Query("code") code: String
-        )
+        ): Call<BaseResponseModel<AuthByPhoneCheckModel?>>
 
         @GET("tasks")
         fun getTasks(

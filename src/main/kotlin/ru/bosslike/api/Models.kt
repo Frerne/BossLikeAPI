@@ -75,6 +75,11 @@ data class AuthByPhoneFirstStageModel(
     val token: String
 )
 
+data class AuthByPhoneCheckModel(
+    val message: String,
+    val social: UserSocialModel
+)
+
 data class TasksResponseModel(
     val items: ArrayList<TaskResponseModel>,
     val limit: Int
